@@ -3,7 +3,7 @@ require 'data_mapper'
 require 'sinatra'
 require 'json'
 require 'date'
-
+require 'uri'
 require 'lib/config'
 
 DataMapper::Logger.new($stdout, :debug)
@@ -90,7 +90,18 @@ end
 post '/add_user' do
   request.body.rewind
   data = JSON.parse(request.body.read)
+=begin
+data = JSON.parse(URI.unescape(request.body.read))
+arydata = URI.unescape(request.body.read).split("&")
+@data = []
+arydata.each do |a| 
+    @data.push(*(a.split("=")))
+end
+#puts "arydata: #{arydata}"
+data = Hash[*@data].to_json
+=end
   `echo "in post /add_user" >> tmp.log`
+  `echo "data: #{data}" >> tmp.log`
   DataManipulation.check_add_user(data)
   @uid = DataManipulation.add_user(data)
 
