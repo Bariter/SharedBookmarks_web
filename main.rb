@@ -87,26 +87,11 @@ end
 =end
 
 # Adds a user with data supplied and returns the created uid.
-post '/add_user' do
+post '/user' do
   request.body.rewind
   data = JSON.parse(request.body.read)
-=begin
-data = JSON.parse(URI.unescape(request.body.read))
-arydata = URI.unescape(request.body.read).split("&")
-@data = []
-arydata.each do |a| 
-    @data.push(*(a.split("=")))
-end
-#puts "arydata: #{arydata}"
-data = Hash[*@data].to_json
-=end
-  `echo "in post /add_user" >> tmp.log`
-  `echo "data: #{data}" >> tmp.log`
   DataManipulation.check_add_user(data)
   @uid = DataManipulation.add_user(data)
-
-#puts "@uid: #{@uid}"
- 
   JSON.generate(:uid => @uid)
 end
 
