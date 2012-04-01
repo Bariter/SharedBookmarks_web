@@ -57,4 +57,17 @@ describe 'POST' do
     end
   end
 
+describe 'GET'
+  describe '/:uid/bookmark' do
+    it 'should return all the bookmarks associated with the uid' do
+      post '/3/bookmark', sample_bookmark.to_json
+      
+      get '/3/bookmark'
+
+      result = last_response.body
+puts "result"
+p result
+    end
+  end
+
 end

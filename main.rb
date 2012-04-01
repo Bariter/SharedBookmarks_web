@@ -62,6 +62,22 @@ get '/bookmark' do
   p Bookmark.all
 end
 
+get '/:uid/bookmark' do
+  @uid = params[:uid]
+  bookmarks = Userinfo.get(@uid).bookmarks.all
+  #TODO
+=begin
+puts "bookmark2"
+  p bookmarks
+  result = []
+  bookmarks.each do |bookmark|
+    result << 
+  end
+puts "bookmark2 in JSON format"
+=end
+  JSON.generate(Hash[*bookmarks])
+end
+
 # /:uid/bookmark adds bookmark.
 # :uid takes the uid of requested user. 
 post '/:uid/bookmark' do
@@ -74,7 +90,7 @@ p data
   DataManipulation.check_add_bookmark(data)
 
   @bid = DataManipulation.add_bookmark(@uid, data)
-  {:uid => @uid, :bid => @bid}.to_json
+  JSON.generate(:uid => @uid, :bid => @bid)
 end
 
 # Adds a user with data supplied and returns the created uid.
@@ -83,6 +99,6 @@ post '/user' do
   data = JSON.parse(request.body.read)
   DataManipulation.check_add_user(data)
   @uid = DataManipulation.add_user(data)
-  {:uid => @uid}.to_json
+  JSON.generate(:uid => @uid)
 end
 
