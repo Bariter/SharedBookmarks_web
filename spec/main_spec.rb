@@ -1,48 +1,60 @@
 require File.dirname(__FILE__) + '/../spec/spec_helper'
 
-describe '/user' do
-  before :each do
-    # cleanup the test db.
-    `rake db:migrate`
-    @data = JSON.generate(:age => 19, :gender => 'f', :occupation => 'student', :email => "test@nowhere.net", :passwd => "mypassword")
-    @data2 = JSON.generate(:age => 19, :gender => 'f', :occupation => 'student', :email => "test2@nowhere.net", :passwd => "mypassword")
+describe 'POST' do
+  before :all do
+    # cleanup the database before testing
+    DataMapper.auto_migrate!
   end
 
-  it 'should return the uid of the added user' do
-    post '/user', @data
+  describe '/user' do
+    it 'should return the uid of the added user' do
+      post '/user', sample_user.to_json
 
-    ret = last_response.body
-    ret_json = JSON.parse(ret)
-    ret_json.should include "uid"
+      ret_json = last_response.body
+      ret = JSON.parse(ret_json)
+
+      ret.should_not be_nil
+      ret["uid"].should_not be_nil
+      ret["uid"].should_not be_empty
+    end
+
+    it 'should return different uid when two users are added in a row' do
+      # Adding first user
+      sample_user1 = JSON.parse(sample_user.to_json)
+      sample_user1["email"] = "testuser1@nowhere.net"
+      post '/user', sample_user1.to_json
+
+      ret_json = last_response.body
+      first_user = JSON.parse(ret_json)
+
+      # Adding second user
+      sample_user2 = JSON.parse(sample_user.to_json)
+      sample_user2["email"] = "testuser2@nowhere.net"
+
+      post '/user', sample_user2.to_json
+
+      ret_json = last_response.body
+      second_user = JSON.parse(ret_json)
+
+      # the returnd uid should be different
+      first_user["uid"].should_not == second_user["uid"]
+    end
+
   end
 
-  it 'should return different uid when two users are added in a row' do
-    # first user added
-    begin
-      post '/user', @data
-      ret = last_response.body
-      ret_json = JSON.parse(ret)
-      ret_json.should include "uid"
-    rescue => e
-      puts "Error in adding the first user: #{e}"
-      return false
-    end
+  describe '/:id/bookmark' do
+    it 'should return bid and uid in JSON format' do
+      post '/3/bookmark', sample_bookmark.to_json
 
-    # second user added
-    begin
-      post '/user', @data2
-      ret2 = last_response.body
-      ret_json2 = JSON.parse(ret2)
-      ret_json2.should include "uid"
-    rescue => e
-      puts "Error in adding the second user: #{e}"
-      return false
-    end
+      result = last_response.body
 
-    puts "ret: #{ret}"
-    puts "ret2: #{ret2}"
-    
-    ret_json2.should_not == ret_json
+      result.should include "bid"
+      result.should include "uid"
+
+      expect {
+        JSON.parse(result)
+      }.not_to raise_error
+    end
   end
 
 end

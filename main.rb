@@ -1,19 +1,20 @@
 require 'rubygems'
-require 'data_mapper'
-require 'sinatra'
-require 'json'
+require 'bundler'
+Bundler.require(:default)
+
 require 'date'
 require 'uri'
-require 'lib/config'
 
-DataMapper::Logger.new($stdout, :debug)
+require 'lib/config'
+require 'lib/database'
+require 'lib/data_manipulation'
+
+# TODO: this needs to be enabled only if env = test
+#DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, MyConfig.connect_to) 
 DataMapper::Model.raise_on_save_failure = true
 
 enable :logging
-
-require 'lib/database'
-require 'lib/data_manipulation'
 
 use Rack::Session::Cookie,
   #:key => 'rack.session',
@@ -57,34 +58,24 @@ puts "json_data: #{data}"
   "ok: @uid: #{@uid}" # need this to avoid bytesize error.
 end
 
-=begin
-# Returns the associated user info with id.
-get '/:id' do
-  @userinfo = Userinfo.get(params[:id])
-  p "uid: #{@userinfo.uid}, gender: #{@userinfo.gender}, date_created: #{@userinfo.date_created}, date_updated: #{@userinfo.date_updated}"
+get '/bookmark' do
+  p Bookmark.all
 end
-=end
 
-=begin
-# This route is called after '/add_user' and should not allow to be called directly.
-get '/id/to_json' do
-  content_type :json
-  @uid = session[:uid]
-  403 if @uid.nil? || @uid.empty
-
-  `echo "@uid: #{p @uid}" >> tmp.log`
-  `echo "ret: #{p ret}" >> tmp.log`
-  JSON.generate(:uid => @uid)
-end 
-=end
-
-=begin
-# :id is uid of requested user
-post '/:id/bookmark' do
+# /:uid/bookmark adds bookmark.
+# :uid takes the uid of requested user. 
+post '/:uid/bookmark' do
+#  content_type :json
   request.body.rewind
   data = JSON.parse(request.body.read)
+  @uid = params[:uid]
+puts "data in bookmark"
+p data
+  DataManipulation.check_add_bookmark(data)
+
+  @bid = DataManipulation.add_bookmark(@uid, data)
+  {:uid => @uid, :bid => @bid}.to_json
 end
-=end
 
 # Adds a user with data supplied and returns the created uid.
 post '/user' do
@@ -92,6 +83,6 @@ post '/user' do
   data = JSON.parse(request.body.read)
   DataManipulation.check_add_user(data)
   @uid = DataManipulation.add_user(data)
-  JSON.generate(:uid => @uid)
+  {:uid => @uid}.to_json
 end
 

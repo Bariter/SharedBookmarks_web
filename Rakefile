@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'data_mapper'
-require 'rspec/core'
-require 'rspec/core/rake_task'
+#require 'rspec/core'
+#require 'rspec/core/rake_task'
 
 $:.unshift( File.join(File.dirname(__FILE__)), "lib")
 require 'config'
@@ -12,7 +12,7 @@ task 'db:migrate' do
   puts 'Migrating Database...'
   DataMapper.setup(:default, MyConfig.connect_to)
   DataMapper.auto_migrate!
-end 
+end
 
 desc 'Upgrade Database'
 task 'db:upgrade' do
@@ -21,7 +21,14 @@ task 'db:upgrade' do
   DataMapper.auto_upgrade!
 end
 
-task 'spec' => ['db:migrate','spec_all']
+#task 'spec' => ['spec_all']
 
-desc 'Run all spec in /spec dir...'
-RSpec::Core::RakeTask.new(:spec_all)
+desc 'Run rspec'
+task :spec do
+  #sh('bundle install')
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new do |t|
+    t.rspec_opts = %w(-c)
+  end
+end
+task :default => :spec
