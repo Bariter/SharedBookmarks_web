@@ -1,7 +1,6 @@
 require 'date'
 
 module DataManipulation
-
   # TODO:currently, auth_id allows only emails.
   @add_user_property = %w[email passwd age gender occupation]
   #@add_bookmark_property = %w[uid name url description]
@@ -121,15 +120,12 @@ module DataManipulation
 
       url = Url.get(book.url)
       if(url.nil?)
-puts "called url is nil"
         #The url has not existed in the database yet, so add one.
         url = Url.create(
           :url => data["url"].to_s,
           :add_count => 1)
       else
         #If the url has already existed, just increment the count.
-puts "url"
-p url
         url.update(:add_count => url.add_count + 1)
       end
 

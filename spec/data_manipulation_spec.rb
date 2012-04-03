@@ -14,7 +14,7 @@ describe DataManipulation do
     Userinfo.count.should eql 1
   end
 
-  context 'user' do
+  describe 'check_add_user' do
     it 'should pass the check when data is good' do
       user_json = sample_user.to_json
       user = JSON.parse(user_json)
@@ -37,7 +37,7 @@ describe DataManipulation do
     end
   end
 
-  context 'bookmark' do
+  describe 'check_add_bookmark' do
     it 'should pass the check when data is good' do
       bookmark_json = sample_bookmark.to_json
       bookmark = JSON.parse(bookmark_json)
