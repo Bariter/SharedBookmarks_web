@@ -14,21 +14,25 @@ module MyTestMethods
     Sinatra::Application
   end
 
-  def sample_user
-      @json_data = {
-        'email' => "bariter@gmail.com",
-        'passwd' => "mypassword",
-        'age' => 20,
-        'gender' => "M",
-        'occupation' => "Student"}.dup
+  def sample_user(email = "bariter@gmail.com", pass = "mypasswd", age = 20,
+      gender = "M", occup = "Student")
+    {
+      'email' => email,
+      'passwd' => pass,
+      'age' => age,
+      'gender' => gender,
+      'occupation' => occup
+    }
   end
 
-  def sample_bookmark
-      @json_data = {
-        'uid' => 3,
-        'url' => "http://kkas.hatenablog.com/",
-        'name' => "my favorite blog",
-        'description' => "this is my favorite blog"}.dup
+  def sample_bookmark(url = "http://kkas.hatenablog.com/",
+    name = "my favorite blog", desc = "thin is my faborite blog", uid = 1)
+    {
+      'uid' => uid,
+      'url' => url,
+      'name' => name,
+      'description' => desc
+    }
   end
 
 end

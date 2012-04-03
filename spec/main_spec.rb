@@ -1,14 +1,15 @@
 require File.dirname(__FILE__) + '/../spec/spec_helper'
 
 describe 'POST' do
-  before :all do
+  before :each do
     # cleanup the database before testing
+    # TODO: there maybe better way to do this.
     DataMapper.auto_migrate!
   end
 
   describe '/user' do
     it 'should return the uid of the added user' do
-      post '/user', sample_user.to_json
+      post '/user', sample_user("testuser1@nowhere.com").to_json
 
       ret_json = last_response.body
       ret = JSON.parse(ret_json)
@@ -20,18 +21,13 @@ describe 'POST' do
 
     it 'should return different uid when two users are added in a row' do
       # Adding first user
-      sample_user1 = JSON.parse(sample_user.to_json)
-      sample_user1["email"] = "testuser1@nowhere.net"
-      post '/user', sample_user1.to_json
+      post '/user', sample_user("testuser1@nowhere.net").to_json
 
       ret_json = last_response.body
       first_user = JSON.parse(ret_json)
 
       # Adding second user
-      sample_user2 = JSON.parse(sample_user.to_json)
-      sample_user2["email"] = "testuser2@nowhere.net"
-
-      post '/user', sample_user2.to_json
+      post '/user', sample_user("testuser2@nowhere.net").to_json
 
       ret_json = last_response.body
       second_user = JSON.parse(ret_json)
@@ -42,9 +38,13 @@ describe 'POST' do
 
   end
 
-  describe '/:id/bookmark' do
+  describe '/:uid/bookmark' do
     it 'should return bid and uid in JSON format' do
-      post '/3/bookmark', sample_bookmark.to_json
+      post '/user', sample_user("testuser1@nowhere.net").to_json
+      ret_json = last_response.body
+      user = JSON.parse(ret_json)
+
+      post "/#{user["uid"]}/bookmark", sample_bookmark.to_json
 
       result = last_response.body
 
@@ -53,20 +53,33 @@ describe 'POST' do
 
       expect {
         JSON.parse(result)
-      }.not_to raise_error
+      }.to_not raise_error
     end
   end
 
 describe 'GET'
   describe '/:uid/bookmark' do
-    it 'should return all the bookmarks associated with the uid' do
-      post '/3/bookmark', sample_bookmark.to_json
-      
-      get '/3/bookmark'
+    it 'should return all the bookmarks for the user in JSON format' do
+      # Add a sample user.
+      post '/user', sample_user("testuser1@nowhere.net").to_json
+      ret_json = last_response.body
+      user = JSON.parse(ret_json)
 
-      result = last_response.body
-puts "result"
-p result
+      # Add two different bookmarks.
+      post "/#{user["uid"]}/bookmark", sample_bookmark("http://aa.com").to_json
+      post "/#{user["uid"]}/bookmark", sample_bookmark("http://bb.com").to_json
+
+      # Retrieve all the bookmarks for this user.
+      get "/#{user["uid"]}/bookmark"
+      bookmarks = last_response.body
+
+      # Make sure the result is in JSON format
+      expect {
+        bookmarks = JSON.parse(bookmarks)
+      }.to_not raise_error
+
+      # Make sure the result has everything.
+      bookmarks["bookmark"].size.should == 2
     end
   end
 
