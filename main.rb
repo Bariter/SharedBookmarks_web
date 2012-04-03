@@ -34,7 +34,7 @@ end
 
 =end
 
-#TODO: need to add filter to check login status
+#TODO: Need to add filter to check login status
 
 # This route is for testing purpose only.
 get '/' do
@@ -62,20 +62,31 @@ get '/bookmark' do
   p Bookmark.all
 end
 
+helpers do
+  def generate_return_bookmark(uid, bookmark)
+    {
+      :uid => uid,
+      :bid => bookmark["bid"],
+      :name => bookmark["name"],
+      :url => bookmark["url"],
+      :description => bookmark["description"],
+      :created_at => bookmark["created_at"],
+      :updated_at => bookmark["updated_at"]
+    }
+  end
+end
+
+# Returns all the bookmarks associated with :uid in JSON format.
 get '/:uid/bookmark' do
   @uid = params[:uid]
   bookmarks = Userinfo.get(@uid).bookmarks.all
-  #TODO
-=begin
-puts "bookmark2"
-  p bookmarks
-  result = []
+  
+  result = {:bookmark => []}
   bookmarks.each do |bookmark|
-    result << 
+    result[:bookmark] << generate_return_bookmark(@uid, bookmark)
   end
-puts "bookmark2 in JSON format"
-=end
-  JSON.generate(Hash[*bookmarks])
+
+  JSON.generate(result)
 end
 
 # /:uid/bookmark adds bookmark.
