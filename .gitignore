@@ -1,5 +1,4 @@
 db.sqlite3
-sqlitejdbc-v056.jar
 test/*
 .AppleDouble
 .bundle
