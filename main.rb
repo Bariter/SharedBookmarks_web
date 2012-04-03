@@ -8,6 +8,7 @@ require 'uri'
 require 'lib/config'
 require 'lib/database'
 require 'lib/data_manipulation'
+require 'lib/utils'
 
 # TODO: this needs to be enabled only if env = test
 #DataMapper::Logger.new($stdout, :debug)
@@ -58,10 +59,13 @@ puts "json_data: #{data}"
   "ok: @uid: #{@uid}" # need this to avoid bytesize error.
 end
 
+# TODO
+# This is for testing purpose only.
 get '/bookmark' do
   p Bookmark.all
 end
 
+=begin
 helpers do
   def generate_return_bookmark(uid, bookmark)
     {
@@ -75,9 +79,12 @@ helpers do
     }
   end
 end
+=end
 
 # Returns all the bookmarks associated with :uid in JSON format.
 get '/:uid/bookmark' do
+  helpers Utils::BookmarkUtils
+
   @uid = params[:uid]
   bookmarks = Userinfo.get(@uid).bookmarks.all
   
@@ -89,27 +96,26 @@ get '/:uid/bookmark' do
   JSON.generate(result)
 end
 
-# /:uid/bookmark adds bookmark.
-# :uid takes the uid of requested user. 
+# This route adds a bookmark.
+# :uid takes the uid of the requested user. 
 post '/:uid/bookmark' do
-#  content_type :json
   request.body.rewind
   data = JSON.parse(request.body.read)
-  @uid = params[:uid]
-puts "data in bookmark"
-p data
-  DataManipulation.check_add_bookmark(data)
 
+  @uid = params[:uid]
+  DataManipulation.check_add_bookmark(data)
   @bid = DataManipulation.add_bookmark(@uid, data)
+
   JSON.generate(:uid => @uid, :bid => @bid)
 end
 
-# Adds a user with data supplied and returns the created uid.
+# This route adds a user with data supplied and returns the created uid.
 post '/user' do
   request.body.rewind
+
   data = JSON.parse(request.body.read)
   DataManipulation.check_add_user(data)
   @uid = DataManipulation.add_user(data)
+
   JSON.generate(:uid => @uid)
 end
-
