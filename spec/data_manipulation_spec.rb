@@ -8,9 +8,9 @@ describe DataManipulation do
     Userinfo.count.should eql 0
     user = sample_user
     Userinfo.create(
-      :age => user["age"],
-      :gender => user["gender"],
-      :occupation => user["occupation"])
+      "age" => user["age"],
+      "gender" => user["gender"],
+      "occupation" => user["occupation"])
     Userinfo.count.should eql 1
   end
 
@@ -18,7 +18,6 @@ describe DataManipulation do
     it 'should pass the check when data is good' do
       user_json = sample_user.to_json
       user = JSON.parse(user_json)
-
       DataManipulation.check_add_user(user).should be_true
     end
 
@@ -27,7 +26,7 @@ describe DataManipulation do
       user = JSON.parse(user_json)
 
       # Create failing data with invalid string.
-      # Any data can be used here. We use url for now.
+      # Any data can be used here. We use the property of "age" for now.
       user["age"] = "Hello World!"
       bad_user = user
 
@@ -59,7 +58,7 @@ describe DataManipulation do
     end
 
     it 'should create url data when new bookmark is added' do
-      bookmark = JSON.parse(sample_bookmark.to_json)
+      bookmark = sample_bookmark.to_json
 
       user = Userinfo.get(1)
       user.should_not be_nil
@@ -75,22 +74,24 @@ describe DataManipulation do
 
     it 'should increment add_count by one when existing bookmark is added' do
       # Add second user to add the same url.
-      user = sample_user
+      sample = sample_user
       user2 = Userinfo.create(
-        :age => user["age"],
-        :gender => user["gender"],
-        :occupation => user["occupation"])
+        "age" => sample["age"],
+        "gender" => sample["gender"],
+        "occupation" => sample["occupation"])
 
       Userinfo.count.should == 2
 
+      # Add a bookmark to the first user.
       user = Userinfo.get(1)
-      bookmark = JSON.parse(sample_bookmark.to_json)
+      bookmark = JSON.parse(sample_bookmark("http://a.com/").to_json)
 
       DataManipulation.add_bookmark(user.uid, bookmark)
-      user.bookmarks.get(1).should_not be_nil
 
+      user.bookmarks.get(1).should_not be_nil
       Url.get(bookmark["url"]).add_count.should == 1
 
+      # Add the same bookmark to the second user.
       DataManipulation.add_bookmark(user2.uid, bookmark)
       user.bookmarks.get(1).should_not be_nil
 

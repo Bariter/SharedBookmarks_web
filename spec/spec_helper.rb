@@ -17,21 +17,21 @@ module MyTestMethods
   def sample_user(email = "bariter@gmail.com", pass = "mypasswd", age = 20,
       gender = "M", occup = "Student")
     {
-      'email' => email,
-      'passwd' => pass,
-      'age' => age,
-      'gender' => gender,
-      'occupation' => occup
+      "email" => email,
+      "passwd" => pass,
+      "age" => age,
+      "gender" => gender,
+      "occupation" => occup
     }
   end
 
   def sample_bookmark(url = "http://kkas.hatenablog.com/",
     name = "my favorite blog", desc = "thin is my faborite blog", uid = 1)
     {
-      'uid' => uid,
-      'url' => url,
-      'name' => name,
-      'description' => desc
+      "uid" => uid,
+      "url" => url,
+      "name" => name,
+      "description" => desc
     }
   end
 

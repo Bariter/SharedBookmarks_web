@@ -2,13 +2,18 @@ require 'date'
 
 module DataManipulation
   # TODO:currently, auth_id allows only emails.
-  @add_user_property = %w[email passwd age gender occupation]
-  #@add_bookmark_property = %w[uid name url description]
+  # Set true for necessary propeties. Otherwise, put false.
+  @add_user_property = {
+    "email" => true,
+    "passwd" => true,
+    "age" => true,
+    "gender" => true,
+    "occupation" => false}
   @add_bookmark_property = {
-    :uid => true,
-    :name => true,
-    :url => true,
-    :description => false}
+    "uid" => true,
+    "name" => true,
+    "url" => true,
+    "description" => false}
 
   class Error < StandardError; end
 
@@ -24,11 +29,10 @@ module DataManipulation
 
   class << self
     def check_add_user(data)
-      @add_user_property.each do |prop|
+      @add_user_property.each do |prop, required|
         value = data[prop]
 
-        #raise "Invalid value: #{prop}" if value.nil? || value.to_s.empty?
-        if value.nil? || value.to_s.empty?
+        if required && value.nil? || value.to_s.empty?
           raise(InvalidPropError, "for #{prop}: #{value}")
         end
 
@@ -48,6 +52,7 @@ module DataManipulation
           check = value.downcase.match('m|f')? true:false
         when "occupation"
           # TODO: do nothing for now.
+          check = true
         else
           # When we reache here, something is wrong.
         end
@@ -82,22 +87,20 @@ module DataManipulation
       @add_bookmark_property.each do |prop, required|
         value = data[prop.to_s]
 
-        #TODO: this should allow properties that are not required.
-        # changing prop array to map should work.
         if required && value.nil? || value.to_s.empty?
           raise(InvalidPropError, "#{prop}: #{value}")
         end
 
         check = true 
         case prop
-        when :uid
+        when "uid"
           check = /[1-9]+/ =~ value.to_s
-        when :name
+        when "name"
           # anything can be true for now...
           check = true
-        when :url
-          check = URI.regexp =~ value
-        when :description
+        when "url"
+          check = URI.regexp =~ value.to_s
+        when "description"
           # anything can be true for now...
           check = true
         else
@@ -110,24 +113,25 @@ module DataManipulation
 
     def add_bookmark(uid, data)
       bookmark = {
-        :name => data["name"],
-        :url => data["url"].to_s,
-        :description => data["description"],
-        :validity => true}
+        "name" => data["name"],
+        "url" => data["url"].to_s,
+        "description" => data["description"],
+        "validity" => true}
 
       user = Userinfo.get(uid)
-      book = user.bookmarks.create(bookmark)
 
-      url = Url.get(book.url)
+      url = Url.get(bookmark["url"])
       if(url.nil?)
         #The url has not existed in the database yet, so add one.
         url = Url.create(
-          :url => data["url"].to_s,
-          :add_count => 1)
+          "url" => data["url"].to_s,
+          "add_count" => 1)
       else
         #If the url has already existed, just increment the count.
-        url.update(:add_count => url.add_count + 1)
+        url.update("add_count" => url.add_count + 1)
       end
+
+      book = user.bookmarks.create(bookmark)
 
       if(book.saved?)
         book.bid
