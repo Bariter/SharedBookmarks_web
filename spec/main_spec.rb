@@ -15,48 +15,48 @@ describe 'Routes' do
         ret_json = last_response.body
         ret = JSON.parse(ret_json)
 
-          ret.should_not be_nil
-          ret["uid"].should_not be_nil
-          ret["uid"].should_not be_empty
-        end
-
-        it 'should return different uid when two users are added in a row' do
-          # Adding first user
-          post '/user', sample_user("testuser1@nowhere.net").to_json
-
-          ret_json = last_response.body
-          first_user = JSON.parse(ret_json)
-
-          # Adding second user
-          post '/user', sample_user("testuser2@nowhere.net").to_json
-
-          ret_json = last_response.body
-          second_user = JSON.parse(ret_json)
-
-          # the returnd uid should be different
-          first_user["uid"].should_not == second_user["uid"]
-        end
+        ret.should_not be_nil
+        ret["uid"].should_not be_nil
+        ret["uid"].should_not be_empty
       end
 
-      describe '/:uid/bookmark' do
-        it 'should return bid and uid in JSON format' do
-          post '/user', sample_user("testuser1@nowhere.net").to_json
-          ret_json = last_response.body
-          user = JSON.parse(ret_json)
+      it 'should return different uid when two users are added in a row' do
+        # Adding first user
+        post '/user', sample_user("testuser1@nowhere.net").to_json
 
-          post "/#{user["uid"]}/bookmark", sample_bookmark.to_json
+        ret_json = last_response.body
+        first_user = JSON.parse(ret_json)
 
-          result = last_response.body
+        # Adding second user
+        post '/user', sample_user("testuser2@nowhere.net").to_json
 
-          result.should include "bid"
-          result.should include "uid"
+        ret_json = last_response.body
+        second_user = JSON.parse(ret_json)
 
-          expect {
-            JSON.parse(result)
-          }.to_not raise_error
-        end
+        # the returnd uid should be different
+        first_user["uid"].should_not == second_user["uid"]
       end
     end
+
+    describe '/:uid/bookmark' do
+      it 'should return bid and uid in JSON format' do
+        post '/user', sample_user("testuser1@nowhere.net").to_json
+        ret_json = last_response.body
+        user = JSON.parse(ret_json)
+
+        post "/#{user["uid"]}/bookmark", sample_bookmark.to_json
+
+        result = last_response.body
+
+        result.should include "bid"
+        result.should include "uid"
+
+        expect {
+          JSON.parse(result)
+        }.to_not raise_error
+      end
+    end
+  end
 
   describe 'GET' do
     describe '/:uid/bookmark' do
@@ -69,7 +69,6 @@ describe 'Routes' do
         # Add two different bookmarks.
         post "/#{user["uid"]}/bookmark", sample_bookmark("http://a.com").to_json
         post "/#{user["uid"]}/bookmark", sample_bookmark("http://b.com").to_json
-
         # Retrieve all the bookmarks for this user.
         get "/#{user["uid"]}/bookmark"
         bookmarks = last_response.body

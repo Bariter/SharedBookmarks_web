@@ -1,9 +1,8 @@
 require 'rubygems'
 require 'data_mapper'
-#require 'rspec/core'
-#require 'rspec/core/rake_task'
 
-$:.unshift( File.join(File.dirname(__FILE__)), "lib")
+#$:.unshift( File.join(File.dirname(__FILE__)), "lib")
+$:.unshift("./lib")
 require 'config'
 require 'database'
 
@@ -21,11 +20,9 @@ task 'db:upgrade' do
   DataMapper.auto_upgrade!
 end
 
-#task 'spec' => ['spec_all']
 
 desc 'Run rspec'
 task :spec do
-  #sh('bundle install')
   require 'rspec/core/rake_task'
   RSpec::Core::RakeTask.new do |t|
     t.rspec_opts = %w(-c)
